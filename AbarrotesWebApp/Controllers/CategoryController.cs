@@ -1,0 +1,181 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Abarrotes.DataAccess;
+using AbarrotesWebApp.Models;
+using Abarrotes.Business.Rules;
+
+namespace AbarrotesWebApp.Controllers
+{
+    public class CategoryController : Controller
+    {
+        private readonly MySQLiteContext _context;
+        private readonly BusinessCategory _manageCategory;
+
+        public CategoryController(MySQLiteContext context)
+        {
+            _context = context;
+            _manageCategory = new BusinessCategory(_context);
+        }
+
+        // GET: Categorys
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                IEnumerable<Category> categories = new List<Category>();
+
+                categories = _manageCategory.GetAll();
+
+                return View(categories);
+            }
+            catch (Exception ex)
+            {
+                return View("..Shared\\Error", new ErrorViewModel
+                {
+                    RequestId = ex.Message,
+                    Message = ex.InnerException.Message,
+                    Source = ex.InnerException.Source
+                });
+            }
+        }
+
+        // GET: Categorys/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            Category category = new Category();
+
+            category = _manageCategory.GetById(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return View(category);
+            }
+        }
+
+        // GET: Categorys/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Categorys/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("IdCategory,Name")] Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _manageCategory.Add(category);
+
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    return View("Error", new ErrorViewModel
+                    {
+                        RequestId = ex.Message,
+                        Message = ex.InnerException.Message,
+                        Source = ex.InnerException.Source
+                    });
+                }
+            }
+            return View(category);
+        }
+
+        // GET: Categorys/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            Category category = new Category();
+
+            category = _manageCategory.GetById(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+            return View(category);
+        }
+
+        // POST: Categorys/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("IdCategory,Name,Status," +
+            "CreateUser,CreateDate")] Category category)
+        {
+            string message = string.Empty;
+
+            if (id != category.IdCategory)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    message = _manageCategory.Update(category);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!CategoryExists(category.IdCategory))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(category);
+        }
+
+        // GET: Categorys/Delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            Category category = new Category();
+
+            category = _manageCategory.GetById(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // POST: Categorys/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            string message = string.Empty;
+
+            message = _manageCategory.Delete(id);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool CategoryExists(int id)
+        {
+            return _context.Category.Any(e => e.IdCategory == id);
+        }
+    }
+}
