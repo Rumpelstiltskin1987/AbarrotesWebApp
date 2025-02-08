@@ -38,7 +38,6 @@ namespace Abarrotes.Business.Core
             }
             finally
             {
-
             }
 
             return message;
@@ -63,7 +62,7 @@ namespace Abarrotes.Business.Core
             }
             catch (Exception ex)
             {
-                message = "Error al eliminar el producto: " + ex.Message;
+                throw ex;
             }
             finally
             {
@@ -81,6 +80,7 @@ namespace Abarrotes.Business.Core
             }
             catch (Exception ex)
             {
+                throw ex;
             }
             finally
             {
@@ -120,8 +120,9 @@ namespace Abarrotes.Business.Core
                     .Where(x => x.IdProduct == id)
                     .FirstOrDefault();
             }
-            catch
+            catch (Exception ex) 
             {
+                throw ex;
             }
             finally
             {
@@ -145,11 +146,12 @@ namespace Abarrotes.Business.Core
             }
             catch (Exception ex)
             {
-                message = "Error al actualizar el producto: " + ex.Message;
+                throw ex;
             }
             finally
             {
             }
+
             return message;
         }
     }

@@ -35,7 +35,7 @@ namespace Abarrotes.Business.Core
             }
             catch (Exception ex)
             {
-                message = "Error al registrar la categoría: " + ex.Message;
+                throw ex;
             }
             finally
             {
@@ -64,7 +64,7 @@ namespace Abarrotes.Business.Core
             }
             catch (Exception ex)
             {
-                message = "Error al eliminar la categoria: " + ex.Message;
+                throw ex;
             }
             finally
             {
@@ -148,7 +148,7 @@ namespace Abarrotes.Business.Core
             }
             catch (Exception ex)
             {
-                message = "Error al actualizar la categoria: " + ex.Message;
+                throw ex;
             }
             finally
             {

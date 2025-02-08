@@ -16,11 +16,13 @@ namespace AbarrotesWebApp.Controllers
     {
         private readonly MySQLiteContext _context;
         private readonly BusinessProduct _manageProduct;
+        private readonly BusinessCategory _managecategory;
 
         public ProductController(MySQLiteContext context)
         {
             _context = context;
             _manageProduct = new BusinessProduct(_context);
+            _managecategory = new BusinessCategory(_context); 
         }
 
         // GET: Productos
@@ -34,8 +36,13 @@ namespace AbarrotesWebApp.Controllers
             }
             catch (Exception ex)
             {
-                return View("Error", new ErrorViewModel { 
-                    RequestId = ex.Message  
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
                 });
             }
 
@@ -47,7 +54,21 @@ namespace AbarrotesWebApp.Controllers
         {
             Product product = new Product();
 
-            product = _manageProduct.GetById(id);
+            try
+            {
+                product = _manageProduct.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             if (product == null)
             {
@@ -62,15 +83,22 @@ namespace AbarrotesWebApp.Controllers
         // GET: Productos/Create
         public IActionResult Create()
         {
+            var categories = _managecategory.GetAll()
+                .Select(c => new SelectListItem { Value = c.IdCategory.ToString(), Text = c.Name })
+                .ToList();
+
+            ViewBag.Categories = categories;
+
             return View();
         }
+
 
         // POST: Productos/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,IdCategory,Price,Stock,MeasureUnit,UrlImage")] Product product)
+        public async Task<IActionResult> Create([Bind("Name,IdCategory,Price,Stock,MeasureUnit,UrlImage")] Product product, IFormFile ProductImage)
         {
             string message = string.Empty;
 
@@ -80,16 +108,40 @@ namespace AbarrotesWebApp.Controllers
                 {
                     message = _manageProduct.Add(product);
 
+                    if (ProductImage != null && ProductImage.Length > 0 && message == "Producto registrado")
+                    {
+                        // Ruta donde se guardará la imagen
+                        var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", ProductImage.FileName);
+
+                        // Guardar la imagen en la ruta especificada
+                        using (var stream = new FileStream(imagePath, FileMode.Create))
+                        {
+                            await ProductImage.CopyToAsync(stream);
+                        }
+                    }
 
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    return View("Error", new ErrorViewModel { RequestId = ex.Message });
+                    return View("Error", new ErrorViewModel
+                    {
+                        RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                        Message = ex.Message,
+                        Source = ex.Source,
+                        InnerExceptionMessage = ex.InnerException.Message,
+                        InnerExceptionSource = ex.InnerException.Source
+                    });
                 }
             }
             else
             {
+                var categories = _managecategory.GetAll()
+                .Select(c => new SelectListItem { Value = c.IdCategory.ToString(), Text = c.Name })
+                .ToList();
+
+                ViewBag.Categories = categories;
+
                 return View(product);
             }
         }
@@ -100,7 +152,21 @@ namespace AbarrotesWebApp.Controllers
         {
             Product product = new Product();
 
-            product = _manageProduct.GetById(id);
+            try
+            {
+                product = _manageProduct.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             if (product == null)
             {
@@ -117,8 +183,8 @@ namespace AbarrotesWebApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdProducto,Name,IdCategory,Price,Stock,MeasureUnit," +
-            "UrlImage,Status,CreateUser,CreateDate")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("IdProduct,Name,IdCategory,Price,Stock,MeasureUnit," +
+            "UrlImage,Status,CreateUser,CreateDate")] Product product, IFormFile ProductImage)
         {
             string message = string.Empty;
 
@@ -127,6 +193,18 @@ namespace AbarrotesWebApp.Controllers
                 try
                 {
                     message = _manageProduct.Update(product);
+
+                    if (ProductImage != null && ProductImage.Length > 0 && message == "Producto actualizado")
+                    {
+                        // Ruta donde se guardará la imagen
+                        var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", ProductImage.FileName);
+
+                        // Guardar la imagen en la ruta especificada
+                        using (var stream = new FileStream(imagePath, FileMode.Create))
+                        {
+                            await ProductImage.CopyToAsync(stream);
+                        }
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -139,6 +217,18 @@ namespace AbarrotesWebApp.Controllers
                         throw;
                     }
                 }
+                catch (Exception ex)
+                {
+                    return View("Error", new ErrorViewModel
+                    {
+                        RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                        Message = ex.Message,
+                        Source = ex.Source,
+                        InnerExceptionMessage = ex.InnerException.Message,
+                        InnerExceptionSource = ex.InnerException.Source
+                    });
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             else
@@ -152,7 +242,21 @@ namespace AbarrotesWebApp.Controllers
         {
             Product product = new Product();
 
-            product = _manageProduct.GetById(id);
+            try
+            {
+                product = _manageProduct.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             if (product == null)
             {
@@ -161,7 +265,7 @@ namespace AbarrotesWebApp.Controllers
             else
             {
                 return View(product);
-            } 
+            }
         }
 
         // POST: Productos/Delete/5
@@ -171,7 +275,21 @@ namespace AbarrotesWebApp.Controllers
         {
             string message = string.Empty;
 
-            message = _manageProduct.Delete(id);
+            try
+            {
+                message = _manageProduct.Delete(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             return RedirectToAction(nameof(Index));
         }

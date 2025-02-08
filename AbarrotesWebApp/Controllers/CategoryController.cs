@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Abarrotes.DataAccess;
 using AbarrotesWebApp.Models;
 using Abarrotes.Business.Rules;
+using System.Diagnostics;
 
 namespace AbarrotesWebApp.Controllers
 {
@@ -35,11 +36,13 @@ namespace AbarrotesWebApp.Controllers
             }
             catch (Exception ex)
             {
-                return View("..Shared\\Error", new ErrorViewModel
+                return View("Error", new ErrorViewModel
                 {
-                    RequestId = ex.Message,
-                    Message = ex.InnerException.Message,
-                    Source = ex.InnerException.Source
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
                 });
             }
         }
@@ -49,7 +52,21 @@ namespace AbarrotesWebApp.Controllers
         {
             Category category = new Category();
 
-            category = _manageCategory.GetById(id);
+            try
+            {
+                category = _manageCategory.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             if (category == null)
             {
@@ -86,9 +103,11 @@ namespace AbarrotesWebApp.Controllers
                 {
                     return View("Error", new ErrorViewModel
                     {
-                        RequestId = ex.Message,
-                        Message = ex.InnerException.Message,
-                        Source = ex.InnerException.Source
+                        RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                        Message = ex.Message,
+                        Source = ex.Source,
+                        InnerExceptionMessage = ex.InnerException.Message,
+                        InnerExceptionSource = ex.InnerException.Source
                     });
                 }
             }
@@ -100,7 +119,21 @@ namespace AbarrotesWebApp.Controllers
         {
             Category category = new Category();
 
-            category = _manageCategory.GetById(id);
+            try
+            {
+                category = _manageCategory.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             if (category == null)
             {
@@ -141,6 +174,18 @@ namespace AbarrotesWebApp.Controllers
                         throw;
                     }
                 }
+                catch (Exception ex)
+                {
+                    return View("Error", new ErrorViewModel
+                    {
+                        RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                        Message = ex.Message,
+                        Source = ex.Source,
+                        InnerExceptionMessage = ex.InnerException.Message,
+                        InnerExceptionSource = ex.InnerException.Source
+                    });
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
@@ -151,7 +196,21 @@ namespace AbarrotesWebApp.Controllers
         {
             Category category = new Category();
 
-            category = _manageCategory.GetById(id);
+            try
+            {
+                category = _manageCategory.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             if (category == null)
             {
@@ -168,7 +227,21 @@ namespace AbarrotesWebApp.Controllers
         {
             string message = string.Empty;
 
-            message = _manageCategory.Delete(id);
+            try
+            {
+                message = _manageCategory.Delete(id);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    InnerExceptionMessage = ex.InnerException.Message,
+                    InnerExceptionSource = ex.InnerException.Source
+                });
+            }
 
             return RedirectToAction(nameof(Index));
         }
